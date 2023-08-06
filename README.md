@@ -17,15 +17,34 @@ Status is defined as:
 1. ⚪ Grey  -- usually meaning there is unspecific or neutral information available
 2. 🟢 Green  -- usually meaning the source is all ok 
 3. 🟡 Yellow  -- usually meaning the source is in an unchecked warning state
-4. 🔴 Red  -- usually meaning the source is in an error state.
+4. 🔴 Red  -- usually meaning the source is in an error state
 
 Meanings of the different colors might vary for different sources.
 
 Status signals information is assumed to be pushed into the service's storage by the sources.
 This project's implementations usually will not pull and collect information.
 
-When evaluating a signals status, the time the last status signal event was pushed into the storage is important as well.
+When evaluating a signal's status, the time the last status signal event was pushed into the storage is important as well.
 Missing status signal events can change the reported status from the last pushed status, e.g. when a device is not longer sending in status, it's signal can change to yellow (a warning) or red (an error), to call for attention and investigation.
+
+## Status Storage Host
+The [Status Storage Host](./doc/status_storage.md) is a web service backend to store and evaluate status signals.
+It offers three API access levels, to _push_ status signal events, to _query_ status signal info, and to _manage_ all stored data.
+You can find [more info in it's dedicated documentation](./doc/status_storage.md).
+
+The reference implementation of the Status Storage Host in this project is written in Php.
+While this limits it's scalability, it allows for deployment on classical managed web hosts.
+
+🚧 TODO: Status Storage Host Overview
+
+## Status Storage Management App
+🚧 TODO: Status Storage Management App Overview
+
+## Example Status Signal
+🚧 TODO: Example Status Signal Overview
+
+## Status Overview Example
+🚧 TODO: Status Overview Example Overview
 
 ## Alternatives
 This project is specifically aiming for the minimal display use case in small to medium-scale scenarios.
