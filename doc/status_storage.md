@@ -1,4 +1,4 @@
-# Status Light™ Storage Host
+# Status Light™ - Storage Host
 The Status Storage Host is a web service backend to store and evaluate status signals.
 It offers three API levels, to _post_ status signal events, to _query_ status signal info, and to _manage_ all stored data.
 
@@ -10,7 +10,7 @@ It offers three API levels, to _post_ status signal events, to _query_ status si
 ## API Access
 🚧 TODO: API Access
 
-All API routes requires a valid `bearer` token, if not explicitly stated otherwise.
+All API routes requires a valid `Bearer` token, if not explicitly stated otherwise.
 
 
 ## Post API
@@ -52,8 +52,8 @@ Response Codes:
   * if `s` or `v` are missing from the request
   * if the value of `v` is unsupported
   * if the value of any parameter is malformed
-* `401` -- if the `bearer` token is missing or malformed
-* `403` -- if the `bearer` token is valid, but the respective account is not allowed to post events for the sensor
+* `401` -- if the `Bearer` token is missing or malformed
+* `403` -- if the `Bearer` token is valid, but the respective account is not allowed to post events for the sensor
 * `500` -- if the storage backend failed to store the sensor event for any reason
 
 Whether the success is indicated by `200` or `204` is up to the configuration and implementation of the storage backend.
@@ -70,10 +70,8 @@ Whether the success is indicated by `200` or `204` is up to the configuration an
 ## Management API
 🚧 TODO: Management API
 
-## Installation
-🚧 TODO: Installation
-* Prerequisites
-* Authorization Module
+## Deployment & Installation
+You can find details on [installation, configuration, and deployment of the storage host in it's dedicated install.md documentation](../storage/install.md).
 
-## Development and Test
-🚧 TODO: Development and Test
+## Development & Test
+You can find details for development and test in the [dedicated development documentation of the storage host](../storage/README.md).

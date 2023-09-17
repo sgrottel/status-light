@@ -28,8 +28,8 @@ When evaluating a signal's status, the time the last status signal event was pus
 Missing status signal events can change the reported status from the last pushed status, e.g. when a device is not longer sending in status, it's signal can change to yellow (a warning) or red (an error), to call for attention and investigation.
 
 ## Status Storage Host
-The [Status Storage Host](./doc/status_storage.md) is a web service backend to store and evaluate status signals.
-It offers three API access levels, to _push_ status signal events, to _query_ status signal info, and to _manage_ all stored data.
+The [Status Storage Host](./storage/README.md) is a web service backend to store and evaluate status signals.
+It offers three API access levels, to _post_ status signal events, to _query_ status signal info, and to _manage_ all stored data.
 You can find [more info in it's dedicated documentation](./doc/status_storage.md).
 
 The reference implementation of the Status Storage Host in this project is written in Php.

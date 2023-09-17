@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !^/index\.php$
+RewriteCond %{REQUEST_URI} !^(/favicon\.ico|/style/.*|/imgs/.*|/ttf/.*)$
+RewriteRule .* /index.php [PT]

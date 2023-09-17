@@ -1,0 +1,42 @@
+services:
+
+  httpd:
+    image: sgr/phphttpd:7.4
+    build: ./httpd
+    container_name: statuslight-apphttpd
+    links:
+      - mysql
+    ports:
+      - '48000:80'
+    volumes:
+      - '../src:/var/www/html'
+
+  mysql:
+    image: mysql:8.1.0
+    container_name: statuslight-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "127.0.0.1:43306:3306"
+    volumes:
+      - './dbdata:/var/lib/mysql'
+      - './dblog:/var/log/mysql'
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: statuslight-phpmyadmin
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - '127.0.0.1:48002:80'
