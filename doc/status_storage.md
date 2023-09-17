@@ -65,6 +65,14 @@ Whether the success is indicated by `200` or `204` is up to the configuration an
 
 
 ## Query API
+The Query API provides summary and details to the stored status information.
+
+### [GET] https://root/summary
+The `summary` route returns a json object summarizing all relevant status event signals in simple counters.
+
+🚧 TODO: summary route parameters and output
+
+
 🚧 TODO: Query API
 
 ## Management API
