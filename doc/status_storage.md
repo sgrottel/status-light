@@ -12,6 +12,22 @@ It offers three API levels, to _post_ status signal events, to _query_ status si
 
 All API routes requires a valid `Bearer` token, if not explicitly stated otherwise.
 
+### Simple Authentication
+Some API routes allow for _simple authentication_.
+
+In this case the `Bearer` token is a [JWT](https://jwt.io/introduction).
+It's payload is an object with `sub` as only field.
+The `sub` is a special access key provided by the management API for a specific purpose, e.g. only able to push data for one specific sensor.
+
+These simple authentication JWTs can be used on noncritical routes, which can either not harm the system, or cannot query sensitive data.
+
+Routs supporting _simple authentication_ will also work with `Bearer` token of full Authentication.
+
+
+### Full Authentication
+
+🚧 TODO: Document full authentication
+
 
 ## Post API
 The Post API provides the easy access point for sensors to push in new information about themselves.
@@ -46,6 +62,8 @@ When using this route with `POST`, specify all values in the request body.
 * Recommendation: use a json body.
 * Alternative a FORM-Data body is possible (?)
 
+This route is throttled and might reject requests coming in to quickly one after the other.
+
 Response Codes:
 * `200` or `204` -- sensor event was successfully stored
 * `400`
@@ -54,14 +72,15 @@ Response Codes:
   * if the value of any parameter is malformed
 * `401` -- if the `Bearer` token is missing or malformed
 * `403` -- if the `Bearer` token is valid, but the respective account is not allowed to post events for the sensor
+* `429` -- if processing the request is not possible due to the rate limit throttling.
 * `500` -- if the storage backend failed to store the sensor event for any reason
 
 Whether the success is indicated by `200` or `204` is up to the configuration and implementation of the storage backend.
 
+This route allows for _simple authentication_ with the subject being the specific _signal pusher_.
 
-### [POST] https://root/info/in?
 
-🚧 TODO: Push API
+🚧 TODO: more Push API
 
 
 ## Query API
@@ -72,11 +91,14 @@ The `summary` route returns a json object summarizing all relevant status event 
 
 🚧 TODO: summary route parameters and output
 
+This route allows for _simple authentication_ with the subject being the _summary querier_.
 
-🚧 TODO: Query API
+
+🚧 TODO: more Query API
+
 
 ## Management API
-🚧 TODO: Management API
+🚧 TODO: more Management API
 
 ## Deployment & Installation
 You can find details on [installation, configuration, and deployment of the storage host in it's dedicated install.md documentation](../storage/install.md).
