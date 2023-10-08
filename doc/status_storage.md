@@ -59,8 +59,10 @@ All other values for `v` result in an error.
 When using this route with `GET`, specify all values as url parameters.
 
 When using this route with `POST`, specify all values in the request body.
-* Recommendation: use a json body.
-* Alternative a FORM-Data body is possible (?)
+* Recommendation: use a json body and specify `content-type: application/json` 
+* Alternative: use a form-like body and, depending on your upload format, specify either:
+  - `content-type: application/x-www-form-urlencoded`
+  - `content-type: multipart/form-data`
 
 This route is throttled and might reject requests coming in to quickly one after the other.
 

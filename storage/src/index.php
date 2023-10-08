@@ -135,6 +135,10 @@ function collectPayloadFromRequest($required, $optional)
 		{
 			return collectPayloadFromArray($required, $optional, $_POST);
 		}
+		elseif (0 === strncasecmp($contentType, 'multipart/form-data', 19))
+		{
+			return collectPayloadFromArray($required, $optional, $_POST);
+		}
 		elseif (0 === strcasecmp($contentType, 'application/json'))
 		{
 			$data = @file_get_contents('php://input');
