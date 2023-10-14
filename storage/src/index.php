@@ -177,6 +177,11 @@ function collectPayloadFromRequest($required, $optional)
 	}
 }
 
+// always a dynamic page
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // ensure https
 if (($_SERVER['SERVER_NAME'] !== 'localhost')
 	&& ($_SERVER['SERVER_NAME'] !== 'apphttpd'))
@@ -198,11 +203,6 @@ if (($_SERVER['SERVER_NAME'] !== 'localhost')
 		httpMoveAndExit('https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'], 308);
 	}
 }
-
-// always a dynamic page
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
 
 $requestPath = strtok($_SERVER['REQUEST_URI'], '?');
 

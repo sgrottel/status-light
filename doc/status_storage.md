@@ -56,6 +56,8 @@ Valid values for `v` are:
 
 All other values for `v` result in an error.
 
+The parameters `t` and `rt` must be formatted following [ISO_8601](http://en.wikipedia.org/wiki/ISO_8601).
+
 When using this route with `GET`, specify all values as url parameters.
 
 When using this route with `POST`, specify all values in the request body.
