@@ -1,5 +1,39 @@
 <?php
-// Utility
+// always a dynamic page
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
+// Initialization
+$config = @include(__DIR__.'/config.php');
+if (!$config)
+{
+	http_response_code(500); // load config error
+	die();
+}
+require_once __DIR__.'/sqlServer.php';
+$sql = new SqlConnection($config->db);
+if (!$sql)
+{
+	http_response_code(500); // init sql error
+	die();
+}
+if (!is_string($sql->GetPrefix()))
+{
+	http_response_code(500); // config error, prefix string type
+	die();
+}
+require_once __DIR__.'/logger.php';
+$log = new Logger($sql, $sql->GetPrefix() . $config->log->table, $config->log->length);
+if (!$sql)
+{
+	http_response_code(500); // init log error
+	die();
+}
+
+// Utility functions
+
+// Issue a http move
 function httpMoveAndExit($location, $mode = 303)
 {
 	if (headers_sent())
@@ -87,6 +121,7 @@ function getBearerToken()
 // ref params for performance reasons. Wont be changed.
 function collectPayloadFromArray(&$required, &$optional, &$data)
 {
+	global $log;
 	$payload = array();
 
 	foreach ($required as $key)
@@ -98,6 +133,7 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 		else
 		{
 			http_response_code(400); // required data missing
+			$log->error('required data missing');
 			die();
 		}
 	}
@@ -115,6 +151,7 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 		else
 		{
 			http_response_code(400); // unexpected data
+			$log->error('unexpected data');
 			die();
 		}
 	}
@@ -127,6 +164,7 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 // Does not (cannot) validate field values.
 function collectPayloadFromRequest($required, $optional)
 {
+	global $log;
 	// Extend with other request types on demand, e.g. PATCH
 	if ('POST' === $_SERVER['REQUEST_METHOD'])
 	{
@@ -145,17 +183,20 @@ function collectPayloadFromRequest($required, $optional)
 			if (false === $data)
 			{
 				http_response_code(400); // failed to read request body
+				$log->error('failed to read request body');
 				die();
 			}
 			$data = @json_decode($data, true);
 			if (false === $data || null === $data)
 			{
 				http_response_code(400); // failed to decode request body as json
+				$log->error('failed to decode request body as json');
 				die();
 			}
 			if (!is_array($data))
 			{
 				http_response_code(400); // json decode of request body returned unexpected non-array type
+				$log->error('json decode of request body returned unexpected non-array type');
 				die();
 			}
 			return collectPayloadFromArray($required, $optional, $data);
@@ -163,6 +204,7 @@ function collectPayloadFromRequest($required, $optional)
 		else
 		{
 			http_response_code(400); // request with unknown/unexpected content type
+			$log->error("request with unknown/unexpected content type: '{$contentType}'");
 			die();
 		}
 	}
@@ -173,14 +215,12 @@ function collectPayloadFromRequest($required, $optional)
 	else
 	{
 		http_response_code(400); // request malformed
+		$log->error('request malformed');
 		die();
 	}
 }
 
-// always a dynamic page
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
+
 
 // ensure https
 if (($_SERVER['SERVER_NAME'] !== 'localhost')

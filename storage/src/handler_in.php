@@ -6,25 +6,19 @@ if (1 === preg_match('%/?handler_in\.php$%i', $_SERVER['PHP_SELF']))
 	die();
 }
 
-// early init
-$config = @include(__DIR__.'/config.php');
-if (!$config)
-{
-	http_response_code(500); // load config error
-	die();
-}
-
 // check bearer token
 $bearer = getBearerToken();
 if (!$bearer)
 {
 	http_response_code(401); // missing or malformed bearer
+	$log->error('missing or malformed bearer');
 	die();
 }
 // TODO: next line is for easy early development -- replace
 if ('demotoken' !== $bearer)
 {
 	http_response_code(403); // access denied bearer
+	$log->error('access denied bearer');
 	die();
 }
 
@@ -54,6 +48,7 @@ switch ($payload['v'])
 		break;
 	default:
 		http_response_code(400); // illegal value
+		$log->error('illegal value');
 		die();
 }
 if (isset($payload['t']) && $payload['t'] !== null)
@@ -66,6 +61,7 @@ if (isset($payload['t']) && $payload['t'] !== null)
 	if ($t === false)
 	{
 		http_response_code(400); // illegal date time format
+		$log->error('illegal date time format for t');
 		die();
 	}
 	$payload['t'] = $t;
@@ -80,24 +76,18 @@ if (isset($payload['rt']) && $payload['rt'] !== null)
 	if ($t === false)
 	{
 		http_response_code(400); // illegal date time format
+		$log->error('illegal date time format for rt');
 		die();
 	}
 	$payload['rt'] = $t;
 }
 
-require_once __DIR__.'/sqlServer.php';
-$sql = new SqlConnection($config->db);
-
 $prefix = $sql->GetPrefix();
-if (!is_string($prefix))
-{
-	http_response_code(500); // config error, prefix string type
-	die();
-}
 $conn = $sql->OpenRo();
 if (!$conn)
 {
 	http_response_code(500); // data base connection error
+	$log->error('data base connection error');
 	die();
 }
 
@@ -109,18 +99,21 @@ $stmt = $conn->prepare("SELECT `i`, `max_num_events` FROM `{$prefix}signals` WHE
 if (!$stmt)
 {
 	http_response_code(500); // failed to prepare statement, likely DB issue.
+	$log->error('failed to prepare statement, likely DB issue');
 	exit;
 }
 if (!$stmt->bind_param('s', $payload['s']))
 {
 	$stmt->close();
 	http_response_code(500); // failed to bind parameter; type issue?
+	$log->error('failed to bind parameter; type issue?');
 	exit;
 }
 if (!$stmt->execute())
 {
 	$stmt->close();
-	http_response_code(500); // failed to bind parameter; type issue?
+	http_response_code(500);
+	$log->error('failed to execute statement');
 	exit;
 }
 $res = $stmt->get_result();
@@ -143,6 +136,7 @@ if ($signalId === null)
 	if (!$conn)
 	{
 		http_response_code(500); // data base connection error
+		$log->error('data base connection error');
 		die();
 	}
 	
@@ -150,24 +144,28 @@ if ($signalId === null)
 	if (!$stmt)
 	{
 		http_response_code(500); // failed to prepare statement, likely DB issue.
+		$log->error('failed to prepare statement, likely DB issue');
 		exit;
 	}
 	if (!$stmt->bind_param('si', $payload['s'], $config->signal_default->max_num_events))
 	{
 		$stmt->close();
 		http_response_code(500); // failed to bind parameter; type issue?
+		$log->error('failed to bind parameter; type issue?');
 		exit;
 	}
 	if (!$stmt->execute())
 	{
 		$stmt->close();
-		http_response_code(500); // failed to bind parameter; type issue?
+		http_response_code(500);
+		$log->error('failed to execute statement');
 		exit;
 	}
 	if ($stmt->errno !== 0 || $stmt->affected_rows !== 1)
 	{
 		$stmt->close();
-		http_response_code(500); // failed add signal to DB
+		http_response_code(500);
+		$log->error('failed to add signal to db');
 		exit;
 	}
 
@@ -184,6 +182,7 @@ $conn = $sql->OpenRw();
 if (!$conn)
 {
 	http_response_code(500); // data base connection error
+	$log->error('data base connection error');
 	die();
 }
 
@@ -228,21 +227,21 @@ $stmt = $conn->prepare("INSERT INTO `{$prefix}events` ({$varStr}) VALUES ({$varS
 if (!$stmt)
 {
 	http_response_code(500); // failed to prepare statement, likely DB issue.
-	print("prepare\n");
+	$log->error('failed to prepare statement, likely DB issue');
 	exit;
 }
 if (!$stmt->bind_param($bindStr, ...$bindVars))
 {
 	$stmt->close();
 	http_response_code(500); // failed to bind parameter; type issue?
-	print("bind\n");
+	$log->error('failed to bind parameter; type issue?');
 	exit;
 }
 if (!$stmt->execute())
 {
 	$stmt->close();
 	http_response_code(500); // failed to bind parameter; type issue?
-	print("exec\n");
+	$log->error('failed to execute statement');
 	exit;
 }
 $insertSuccess = ($stmt->affected_rows === 1);
@@ -270,6 +269,7 @@ if ($insertSuccess === true)
 else
 {
 	http_response_code(500); // Something did not work
+	$log->error('failed to add signal event to db');
 }
 exit();
 ?>
