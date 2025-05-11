@@ -1,7 +1,7 @@
 services:
 
   httpd:
-    image: sgr/phphttpd:7.4
+    image: sgr/phphttpd:8.3
     build: ./httpd
     container_name: statuslight-apphttpd
     links:
@@ -12,13 +12,13 @@ services:
       - '../src:/var/www/html'
 
   mysql:
-    image: mysql:8.1.0
+    image: mariadb:10.11.11
     container_name: statuslight-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "127.0.0.1:43306:3306"
     volumes:

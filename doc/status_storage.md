@@ -1,18 +1,23 @@
 # Status Light™ - Storage Host
+
 The Status Storage Host is a web service backend to store and evaluate status signals.
 It offers three API levels, to _post_ status signal events, to _query_ status signal info, and to _manage_ all stored data.
 
-## Status Storage and Evaluation
+
+## Status Storage and Evaluation (DEPRECATED)
+
 🚧 TODO: Status Storage and Evaluation
 * Automatic Status Timeout
 * Manual Status Ignore/Overwrite
 
-## API Access
+## API Access (DEPRECATED)
+
 🚧 TODO: API Access
 
 All API routes requires a valid `Bearer` token, if not explicitly stated otherwise.
 
 ### Simple Authentication
+
 Some API routes allow for _simple authentication_.
 
 In this case the `Bearer` token is a [JWT](https://jwt.io/introduction).
@@ -29,10 +34,12 @@ Routs supporting _simple authentication_ will also work with `Bearer` token of f
 🚧 TODO: Document full authentication
 
 
-## Post API
+## Post API (DEPRECATED)
+
 The Post API provides the easy access point for sensors to push in new information about themselves.
 
 ### [GET|POST] https://root/in
+
 Posts a sensor status event into the status storage
 
 Required Parameters:
@@ -87,10 +94,12 @@ This route allows for _simple authentication_ with the subject being the specifi
 🚧 TODO: more Push API
 
 
-## Query API
+## Query API (DEPRECATED)
+
 The Query API provides summary and details to the stored status information.
 
 ### [GET] https://root/summary
+
 The `summary` route returns a json object summarizing all relevant status event signals in simple counters.
 
 🚧 TODO: summary route parameters and output
@@ -101,11 +110,16 @@ This route allows for _simple authentication_ with the subject being the _summar
 🚧 TODO: more Query API
 
 
-## Management API
+## Management API (DEPRECATED)
+
 🚧 TODO: more Management API
 
+
 ## Deployment & Installation
+
 You can find details on [installation, configuration, and deployment of the storage host in it's dedicated install.md documentation](../storage/install.md).
 
+
 ## Development & Test
+
 You can find details for development and test in the [dedicated development documentation of the storage host](../storage/README.md).
