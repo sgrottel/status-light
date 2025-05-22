@@ -130,6 +130,9 @@ WHERE i IN (
 );
 ```
 
+If you want to use another db prefix than `sl_` rename all occurances in the script above accordingly.
+
+
 ### Development Queries
 
 You can add lines by:
