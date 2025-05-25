@@ -1,5 +1,5 @@
 <?php
-if (1 === preg_match('%/?handler_summary\.php$%i', $_SERVER['PHP_SELF']))
+if (1 === preg_match('%/?handler_results\.php$%i', $_SERVER['PHP_SELF']))
 {
 	http_response_code(404);
 	die();
@@ -46,7 +46,13 @@ SELECT
         WHEN TIMESTAMPDIFF(MINUTE, E.`end`, NOW()) <= L.`silence_timeout_minutes` THEN (L.`after_value`)
         ELSE (L.`silence_value`)
     END AS `val`,
-    COUNT(*) as `count`
+    L.`id`,
+    E.`emit` as `event_emit`,
+    E.`end` as `event_end`,
+    E.`description` as `event_description`,
+    E.`url` as `event_url`,
+    L.`description` as `line_description`,
+    L.`url` as `line_url`
 FROM `{$prefix}lines` AS L
 LEFT JOIN (
     SELECT *
@@ -56,8 +62,7 @@ LEFT JOIN (
         FROM `{$prefix}events`
         GROUP BY `line`
     )
-) AS E ON E.`line` = `L`.i
-GROUP BY `val`
+) AS E ON E.`line` = `L`.i;
 ");
 
 if (!$stmt->execute())
@@ -68,32 +73,53 @@ if (!$stmt->execute())
 	error_log('failed to execute statement');
 	die();
 }
-
-$counters = [
-	'0' => 0,
-	'1' => 0,
-	'2' => 0,
-	'3' => 0,
-	'4' => 0,
-];
-
 $res = $stmt->get_result();
 if ($res)
 {
 	$data = $res->fetch_all();
 
-	$counters = (object)array_reduce($data, function($carry, $item) {
-		$carry[$item[0]] += $item[1];
-		return $carry;
-	}, $counters);
+	$data = array_map(
+		function ($row) {
+			$o = [
+				'id' => $row[1],
+				'val' => intval($row[0]),
+				'emit' => $row[2]
+			];
+			if ($row[3])
+			{
+				$o['end'] = $row[3];
+			}
+			if ($row[4])
+			{
+				$o['event_description'] = $row[4];
+			}
+			if ($row[5])
+			{
+				$o['event_url'] = $row[5];
+			}
+			if ($row[6])
+			{
+				$o['line_description'] = $row[6];
+			}
+			if ($row[7])
+			{
+				$o['line_url'] = $row[7];
+			}
+			return (object)$o;
+		},
+		$data);
+
+	header('Content-Type: application/json; charset=utf-8');
+	print(json_encode($data));
 
 	$res->close();
+}
+else
+{
+	$data = [];
 }
 $stmt->close();
 
 $sql->Close();
-
-header('Content-Type: application/json; charset=utf-8');
-print(json_encode($counters));
 
 ?>

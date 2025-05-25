@@ -1,4 +1,5 @@
 <?php
+/*
 // file guard disallowing direct invocation
 if (1 === preg_match('%/?handler_in\.php$%i', $_SERVER['PHP_SELF']))
 {
@@ -271,5 +272,6 @@ else
 	http_response_code(500); // Something did not work
 	$log->error('failed to add signal event to db');
 }
+*/
 exit();
 ?>

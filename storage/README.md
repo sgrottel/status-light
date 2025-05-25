@@ -1,4 +1,5 @@
 # Status Light™ - Storage Host
+
 This reference implementation of the Status Storage Host in this project is written in Php.
 While this limits it's scalability, it allows for deployment on classical managed web hosts.
 
@@ -8,6 +9,7 @@ You can find [more info in it's dedicated documentation](../doc/status_storage.m
 
 
 ## Development & Docker
+
 For local development, it's recommended to use the provided docker setup.
 
 Start: (execute in [docker subdirectory](./docker/))
@@ -54,6 +56,7 @@ foreach ($i in 1..100) { $v = Get-Random 5; $s = 'sensor-' + (Get-Random 3); $r 
 
 
 ## Data Base
+
 There are two database tables: `sl_lines` and `sl_events`.
 
 `sl_lines` represent individual signals, e.g. sensors, on which events come into the system.
@@ -96,7 +99,8 @@ CREATE TABLE IF NOT EXISTS `sl_events` (
     `description` TEXT,
     `url` TEXT,
     PRIMARY KEY (`i`),
-    FOREIGN KEY (`line`) REFERENCES `sl_lines`(`i`) ON DELETE CASCADE
+    FOREIGN KEY (`line`) REFERENCES `sl_lines`(`i`) ON DELETE CASCADE,
+    INDEX(`emit`)
 );
 
 DELIMITER &&
@@ -168,38 +172,80 @@ b) run the cleanup procedure as a scheduled event, e.g. nightly.
 
 ### Dev Scratchboard:
 
+#### Summary Query
+
+Full Query:
 ```sql
-INSERT INTO `sl_events`
-(`line_id`,`value`)
-VALUES
-(0, 1);
+SELECT
+    CASE
+        WHEN E.`end` IS NULL THEN 0 
+        WHEN NOW() <= E.`end` THEN (E.`value`)
+        WHEN TIMESTAMPDIFF(MINUTE, E.`end`, NOW()) <= L.`silence_timeout_minutes` THEN (L.`after_value`)
+        ELSE (L.`silence_value`)
+    END AS `val`,
+    L.`id`,
+    E.`end` as `event_end`,
+    E.`description` as `event_description`,
+    E.`url` as `event_url`,
+    L.`description` as `line_description`,
+    L.`url` as `line_url`
+FROM `sl_lines` AS L
+LEFT JOIN (
+    SELECT *
+    FROM `sl_events`
+    WHERE (`line`, `emit`) IN (
+        SELECT `line`, MAX(`emit`)
+        FROM `sl_events`
+        GROUP BY `line`
+    )
+) AS E ON E.`line` = `L`.i;
 ```
-Cannot use `line_id` in insert, because it's not part of the table schema.
-Either use a procedure to map `line_id` to `line` if known or die an error.
 
+Summary Counters:
 ```sql
-DELIMITER //
-
-CREATE OR REPLACE FUNCTION sl_f_line_by_id(IN id TEXT) RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE `line_i` INT;
-    SELECT `i` INTO `line_i` FROM `sl_lines` l WHERE l.`id` = `id` LIMIT 1;
-    RETURN `line_i`;
-END;
-//
-
-DELIMITER ;
-
-SELECT sl_f_line_by_id('DemoLine#3');
-
-INSERT INTO `sl_events` (`line`, `value`) VALUES (sl_f_line_by_id("DemoLine#2"), 1);
-
+SELECT
+    CASE
+        WHEN E.`end` IS NULL THEN 0 
+        WHEN NOW() <= E.`end` THEN (E.`value`)
+        WHEN TIMESTAMPDIFF(MINUTE, E.`end`, NOW()) <= L.`silence_timeout_minutes` THEN (L.`after_value`)
+        ELSE (L.`silence_value`)
+    END AS `val`,
+    COUNT(*) as `count`
+FROM `sl_lines` AS L
+LEFT JOIN (
+    SELECT *
+    FROM `sl_events`
+    WHERE (`line`, `emit`) IN (
+        SELECT `line`, MAX(`emit`)
+        FROM `sl_events`
+        GROUP BY `line`
+    )
+) AS E ON E.`line` = `L`.i
+GROUP BY `val`
 ```
 
 ```sql
 SELECT
-	l.`id`,
+    CASE
+        WHEN E.`end` IS NULL THEN 0 
+        WHEN NOW() <= E.`end` THEN (E.`value`)
+        WHEN TIMESTAMPDIFF(MINUTE, E.`end`, NOW()) <= L.`silence_timeout_minutes` THEN (L.`after_value`)
+        ELSE (L.`silence_value`)
+    END AS `val`,
+    L.`id`
+FROM `sl_lines` AS L
+LEFT JOIN (
+    SELECT *
+    FROM `sl_events`
+    WHERE (`line`, `emit`) IN (
+        SELECT `line`, MAX(`emit`)
+        FROM `sl_events`
+        GROUP BY `line`
+    )
+) AS E ON E.`line` = `L`.i;
+
+SELECT
+    l.`id`,
     CASE
         WHEN NOW() <= t.`end` THEN (t.`value`)
         WHEN TIMESTAMPDIFF(MINUTE, t.`end`, NOW()) <= l.`silence_timeout_minutes` THEN (l.`after_value`)
@@ -243,6 +289,9 @@ WHERE t.`emit` = (SELECT MAX(`emit`) FROM `sl_events` WHERE `line`= t.`line`);
 UPDATE `sl_events` SET `end` = NOW() WHERE `sl_events`.`i` = 8;
 
 ```
+
+
+#### Cleanup
 
 ```sql
 SELECT line, COUNT(*) as count FROM sl_events GROUP BY line;

@@ -23,13 +23,6 @@ if (!is_string($sql->GetPrefix()))
 	http_response_code(500); // config error, prefix string type
 	die();
 }
-require_once __DIR__.'/logger.php';
-$log = new Logger($sql, $sql->GetPrefix() . $config->log->table, $config->log->length);
-if (!$sql)
-{
-	http_response_code(500); // init log error
-	die();
-}
 
 // Utility functions
 
@@ -121,7 +114,6 @@ function getBearerToken()
 // ref params for performance reasons. Wont be changed.
 function collectPayloadFromArray(&$required, &$optional, &$data)
 {
-	global $log;
 	$payload = array();
 
 	foreach ($required as $key)
@@ -132,8 +124,8 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 		}
 		else
 		{
-			http_response_code(400); // required data missing
-			$log->error('required data missing');
+			http_response_code(400); 
+			error_log('required data missing');
 			die();
 		}
 	}
@@ -150,8 +142,8 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 		}
 		else
 		{
-			http_response_code(400); // unexpected data
-			$log->error('unexpected data');
+			http_response_code(400); 
+			error_log('unexpected data');
 			die();
 		}
 	}
@@ -164,7 +156,6 @@ function collectPayloadFromArray(&$required, &$optional, &$data)
 // Does not (cannot) validate field values.
 function collectPayloadFromRequest($required, $optional)
 {
-	global $log;
 	// Extend with other request types on demand, e.g. PATCH
 	if ('POST' === $_SERVER['REQUEST_METHOD'])
 	{
@@ -182,29 +173,29 @@ function collectPayloadFromRequest($required, $optional)
 			$data = @file_get_contents('php://input');
 			if (false === $data)
 			{
-				http_response_code(400); // failed to read request body
-				$log->error('failed to read request body');
+				http_response_code(400);
+				error_log('failed to read request body');
 				die();
 			}
 			$data = @json_decode($data, true);
 			if (false === $data || null === $data)
 			{
-				http_response_code(400); // failed to decode request body as json
-				$log->error('failed to decode request body as json');
+				http_response_code(400);
+				error_log('failed to decode request body as json');
 				die();
 			}
 			if (!is_array($data))
 			{
-				http_response_code(400); // json decode of request body returned unexpected non-array type
-				$log->error('json decode of request body returned unexpected non-array type');
+				http_response_code(400);
+				error_log('json decode of request body returned unexpected non-array type');
 				die();
 			}
 			return collectPayloadFromArray($required, $optional, $data);
 		}
 		else
 		{
-			http_response_code(400); // request with unknown/unexpected content type
-			$log->error("request with unknown/unexpected content type: '{$contentType}'");
+			http_response_code(400);
+			error_log("request with unknown/unexpected content type: '{$contentType}'");
 			die();
 		}
 	}
@@ -214,12 +205,11 @@ function collectPayloadFromRequest($required, $optional)
 	}
 	else
 	{
-		http_response_code(400); // request malformed
-		$log->error('request malformed');
+		http_response_code(400);
+		error_log('request malformed');
 		die();
 	}
 }
-
 
 
 // ensure https
@@ -249,6 +239,11 @@ $requestPath = strtok($_SERVER['REQUEST_URI'], '?');
 if (0 === strcasecmp($requestPath, '/in'))
 {
 	include(__DIR__.'/handler_in.php');
+	exit();
+}
+elseif (0 === strcasecmp($requestPath, '/results'))
+{
+	include(__DIR__.'/handler_results.php');
 	exit();
 }
 elseif (0 === strcasecmp($requestPath, '/summary'))
