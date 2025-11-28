@@ -1,4 +1,4 @@
-# Status Light™
+# Status Light™  <img align="left" src="./images/statuslight_x48.png" style="height:1em" alt="Status Light">
 Status Light™ is a collection of tools and concepts for light-weight summary displays of multiple status signals, similar to status lights.
 
 [![LICENSE](https://img.shields.io/github/license/sgrottel/status-light)](./LICENSE)
